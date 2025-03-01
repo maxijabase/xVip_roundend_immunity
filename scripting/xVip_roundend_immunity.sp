@@ -4,6 +4,11 @@
 #include <tf2_stocks>
 #include <xVip>
 
+#undef REQUIRE_PLUGIN
+#include <updater>
+
+#define UPDATE_URL "https://raw.githubusercontent.com/maxijabase/xVip_roundend_immunity/main/updatefile.txt"
+
 #pragma semicolon 1
 #pragma newdecls required
 
@@ -15,20 +20,21 @@ public Plugin myinfo = {
 	url = "https://github.com/maxijabase"
 };
 
-bool g_bIsHumiliationPeriod = false;
-
 public void OnPluginStart() {
 	HookEvent("teamplay_round_start", Event_RoundStart);
 	HookEvent("teamplay_round_win", Event_RoundWin);
 }
 
+public void Updater_OnLoaded()
+{
+	Updater_AddPlugin(UPDATE_URL);
+}
+
 public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcast) {
-	g_bIsHumiliationPeriod = false;
 	return Plugin_Continue;
 }
 
 public Action Event_RoundWin(Event event, const char[] name, bool dontBroadcast) {
-	g_bIsHumiliationPeriod = true;
 	int winningTeam = event.GetInt("team");
 	GrantImmunity(winningTeam);
 	return Plugin_Continue;
@@ -46,11 +52,5 @@ void GrantImmunity(int winningTeam) {
 			
 		TF2_AddCondition(i, TFCond_UberchargedHidden, TFCondDuration_Infinite);
 		TF2_AddCondition(i, TFCond_ImmuneToPushback, TFCondDuration_Infinite);
-	}
-}
-
-public void OnClientDisconnect(int client) {
-	if (g_bIsHumiliationPeriod && xVip_IsVip(client)) {
-		TF2_RemoveCondition(client, TFCond_UberchargedCanteen);
 	}
 }
